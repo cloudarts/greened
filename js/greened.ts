@@ -1,9 +1,11 @@
 module GreenEd {
 	export class Editor {
-		canvas:HTMLCanvasElement = null;
-		ctx:CanvasRenderingContext2D = null;
-		ctxWidth:number = 0;
-		ctxHeight:number = 0;
+		private colorBG:string = "rgb(0,0,0)";
+		
+		private canvas:HTMLCanvasElement = null;
+		private ctx:CanvasRenderingContext2D = null;
+		private ctxWidth:number = 0;
+		private ctxHeight:number = 0;
 
 		constructor(canvasElement:HTMLCanvasElement) {
 			this.canvas = canvasElement;
@@ -14,14 +16,33 @@ module GreenEd {
 			if( !this.ctx ) {
 				return false;
 			}
-
-			this.ctxWidth = this.canvas.width;
-			this.ctxHeight = this.canvas.height;
-
-			this.ctx.fillStyle = "rgb(200,0,0)";
-			this.ctx.fillRect(0,0,this.ctxWidth, this.ctxHeight);
+			
+			this.resizeCanvas();
 
 			return true;
+		}
+		
+		resizeCanvas() : void {
+
+			this.canvas.style.width ='100%';
+			this.canvas.style.height='100%';
+			
+  			this.canvas.width  = this.canvas.offsetWidth;
+  			this.canvas.height = this.canvas.offsetHeight;
+			
+			this.ctxWidth = this.canvas.width;
+			this.ctxHeight = this.canvas.height;
+			
+			this.redraw();
+		}
+		
+		redraw() : void {
+			this.clear();
+		}
+		
+		clear() : void {
+			this.ctx.fillStyle = this.colorBG;
+			this.ctx.fillRect(0,0,this.ctxWidth, this.ctxHeight);
 		}
 	}
 }
