@@ -39,7 +39,22 @@ module GreenEd {
 			this.canvas.onmouseup = this.onMouseUp;
 			this.canvas.onmouseleave = this.onMouseLeave;
 			
-
+			var filePanelButtons = $('#filePanel').children();
+			for( var i = 0; i < filePanelButtons.length; ++i ) {
+				var button = filePanelButtons[i];
+				$(button).click( (evt) => { 
+					this.onFilePanelButton(evt); 
+				});
+			}
+			
+			var toolsPanelButtons = $('#toolsPanel').children();
+			for( i = 0; i < toolsPanelButtons.length; ++i ) {
+				var button = toolsPanelButtons[i];
+				$(button).click( (evt) => { 
+					this.onToolsPanelButton(evt); 
+				});
+			}
+			
 			return true;
 		}
 		
@@ -57,6 +72,22 @@ module GreenEd {
 			this.canvasBoundingClientRect = this.canvas.getBoundingClientRect();
 			
 			this.redraw();
+		}
+		
+		private onFilePanelButton = (evt:Event) => {
+			var element:HTMLElement = <HTMLElement>evt.target;
+			console.log("clicked on: " + element.id);
+		}
+		
+		private onToolsPanelButton = (evt:Event) => {
+			var element:HTMLElement = <HTMLElement>evt.target;
+			console.log("clicked on: " + element.id);
+			
+			/** toggle effect */
+			$('#toolsPanel').children().each( function() {
+				$(this).removeClass('success');
+			});
+			$(element).addClass('success');
 		}
 		
 		private redraw() : void {
