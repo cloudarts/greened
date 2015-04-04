@@ -5,27 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GreenEd</title>
     <link rel="stylesheet" href="css/foundation.css" />
+    <link rel="stylesheet" href="css/foundation-icons.css" />
+    <link rel="stylesheet" href="css/app.css" />
     <script src="js/vendor/modernizr.js"></script>
   </head>
   <body>
     
+    <!-- file panel -->
     <div class="row">
       <div class="large-12 columns">
       	<div class="panel callout" id="filePanel">
+      	  <a class="button" id="btnZoomIn"><i class="fi-zoom-in noclick"></i></a>
+      	  <a class="button" id="btnZoomOut"><i class="fi-zoom-out noclick"></i></a>
       	</div>
       </div>
     </div>
 
-    <div class="row">
-		<div class="large-1 columns">
-			<div id="toolsPanel" class="panel">
-			</div>
-		</div>
+    <!-- tools panel -->
+    <div id="toolsRow" class="row">
+		  <div class="small-4 medium-2 columns">
+			  <div id="toolsPanel" class="panel">
+			    <a class="button round" id="btnMove"><i class="fi-arrows-out noclick"></i></a>
+			    <a class="button round" id="btnWalls"><i class="fi-share noclick"></i></a>
+			  </div>
+		  </div>
         
-        <div class="large-11 columns">
-			<canvas id="canvas" width="512" height="512"></canvas>
-		</div>
-	</div>	
+      <div class="small-8 medium-10 columns">
+			  <canvas id="canvas" width="512" height="512"></canvas>
+		  </div>
+	  </div>	
 
     
     <script src="js/vendor/jquery.js"></script>

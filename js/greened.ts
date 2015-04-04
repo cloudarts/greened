@@ -39,22 +39,6 @@ module GreenEd {
 			this.canvas.onmouseup = this.onMouseUp;
 			this.canvas.onmouseleave = this.onMouseLeave;
 			
-			var filePanelButtons = $('#filePanel').children();
-			for( var i = 0; i < filePanelButtons.length; ++i ) {
-				var button = filePanelButtons[i];
-				$(button).click( (evt) => { 
-					this.onFilePanelButton(evt); 
-				});
-			}
-			
-			var toolsPanelButtons = $('#toolsPanel').children();
-			for( i = 0; i < toolsPanelButtons.length; ++i ) {
-				var button = toolsPanelButtons[i];
-				$(button).click( (evt) => { 
-					this.onToolsPanelButton(evt); 
-				});
-			}
-			
 			return true;
 		}
 		
