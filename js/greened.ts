@@ -30,6 +30,7 @@ module GreenEd {
 		
 		private mouseDownPos:Point = null;
 		private currentMousePos:Point = null;
+		private lastMousePos:Point = null;
 		
 		private walls:Array<Wall> = [];
 		
@@ -57,6 +58,7 @@ module GreenEd {
 			
 			this.resizeCanvas();
 			this.currentMousePos = new Point(0,0);
+			this.lastMousePos = new Point(0,0);
 			
 			this.canvas.onmousedown = this.onMouseDown;
 			this.canvas.onmousemove = this.onMouseMove;
@@ -101,11 +103,11 @@ module GreenEd {
 				var wall = this.walls[i];
 				
 				this.ctx.beginPath();
-				this.ctx.arc(wall.p1.x, wall.p1.y, 10, 0, Math.PI*2, true); 
+				this.ctx.arc(wall.p1.x + this.currentOffset.x, wall.p1.y + this.currentOffset.y, 10, 0, Math.PI*2, true); 
 				this.ctx.stroke();
 				
 				this.ctx.beginPath();
-				this.ctx.arc(wall.p2.x, wall.p2.y, 10, 0, Math.PI*2, true); 
+				this.ctx.arc(wall.p2.x + this.currentOffset.x, wall.p2.y + this.currentOffset.y, 10, 0, Math.PI*2, true); 
 				this.ctx.stroke();
 			}
 		}
@@ -116,13 +118,13 @@ module GreenEd {
 			
 			for( var i:number = 0; i < this.walls.length; ++i ) {
 				var wall = this.walls[i];
-				this.ctx.moveTo(wall.p1.x, wall.p1.y);
-				this.ctx.lineTo(wall.p2.x, wall.p2.y);
+				this.ctx.moveTo(wall.p1.x + this.currentOffset.x, wall.p1.y + this.currentOffset.y);
+				this.ctx.lineTo(wall.p2.x + this.currentOffset.x, wall.p2.y + this.currentOffset.y);
 			}
 			
 			/* draw currently created line */
-			if( null != this.mouseDownPos ) {
-				this.ctx.moveTo(this.mouseDownPos.x, this.mouseDownPos.y);
+			if( this.currentMode == MODE.WALLS && null != this.mouseDownPos ) {
+				this.ctx.moveTo(this.mouseDownPos.x + this.currentOffset.x, this.mouseDownPos.y + this.currentOffset.y);
 				this.ctx.lineTo(this.currentMousePos.x, this.currentMousePos.y);
 			}
 			
@@ -138,6 +140,8 @@ module GreenEd {
 		
 		private onMouseDown = (evt:MouseEvent) => {
 			var pos:Point = this.getMousePos(evt);
+			pos.x -= this.currentOffset.x;
+			pos.y -= this.currentOffset.y;
 			this.mouseDownPos = pos;
 			this.redraw();
 		}
@@ -146,17 +150,28 @@ module GreenEd {
 			var pos:Point = this.getMousePos(evt);
 			this.currentMousePos = pos;
 			if( null != this.mouseDownPos ) {
+				if( this.currentMode == MODE.MOVE ) {
+					console.log("mode: " + this.currentMode);
+					var diff:Point = new Point(this.currentMousePos.x - this.lastMousePos.x, this.currentMousePos.y - this.lastMousePos.y);
+					this.currentOffset.x += diff.x;
+					this.currentOffset.y += diff.y;
+				}
+				
 				this.redraw();
 			}
+			this.lastMousePos = this.currentMousePos;
 		}
 		
 		private onMouseUp = (evt:MouseEvent) => {
-			if( null != this.mouseDownPos ) {
-				var newWall:Wall = new Wall(this.mouseDownPos, this.currentMousePos);
+			if( this.currentMode == MODE.WALLS && null != this.mouseDownPos ) {
+				var actualMouseUpPos:Point = new Point(this.currentMousePos.x - this.currentOffset.x, this.currentMousePos.y - this.currentOffset.y);
+				var newWall:Wall = new Wall(this.mouseDownPos, actualMouseUpPos);
 				this.walls.push(newWall);
-				this.mouseDownPos = null;
-				this.redraw();
 			}
+			
+			this.mouseDownPos = null;
+			
+			this.redraw();
 		}
 		
 		private onMouseLeave = (evt:MouseEvent) => {

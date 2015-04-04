@@ -51,7 +51,17 @@ var onFilePanelButton = function(evt) {
 
 var onToolsPanelButton = function(evt) {
 	var element = evt.target;
-	console.log("clicked on: " + element.id);
+	
+	switch(element.id) {
+		case "btnMove": {
+			editor.setMode(GreenEd.MODE.MOVE);
+			break;
+		}
+		case "btnWalls": {
+			editor.setMode(GreenEd.MODE.WALLS);
+			break;
+		}
+	}
 	
 	/** toggle effect */
 	$('#toolsPanel').children().each( function() {
