@@ -1,13 +1,18 @@
 /// <reference path="jquery.d.ts" />
 /// <reference path="greened.ts" />
 
+var editor:GreenEd.Editor = null;
 
 $(document).ready(function() {
+	/* init editor */
 	var canvasElement:HTMLCanvasElement = <HTMLCanvasElement>$("canvas")[0];
-	var greened:GreenEd.Editor = new GreenEd.Editor(canvasElement);
-	var success:boolean = greened.init();
+	editor = new GreenEd.Editor(canvasElement);
+	var success:boolean = editor.init();
 	
+	/* init controls for editor */
 	initButtons();
+	
+	$('#btnMove').click();
 });
 
 var initButtons = function() {
@@ -32,6 +37,16 @@ var initButtons = function() {
 var onFilePanelButton = function(evt) {
 	var element = evt.target;
 	console.log("clicked on: " + element.id);
+	switch(element.id) {
+		case "btnZoomIn": {
+			editor.zoomIn();
+			break;
+		}
+		case "btnZoomOut": {
+			editor.zoomOut();
+			break;
+		}
+	}
 }
 
 var onToolsPanelButton = function(evt) {

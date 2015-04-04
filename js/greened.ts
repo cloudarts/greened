@@ -1,14 +1,26 @@
 module GreenEd {
-	class Point {
+	export class Point {
 		constructor(public x:number, public y:number) {}
 	}
 	
-	class Wall {
+	export class Wall {
 		constructor(public p1:Point, public p2:Point) {}
 	}
 	
+	export enum MODE {
+		NONE,
+		MOVE,
+		WALLS
+	};
+	
 	export class Editor {
+		
+		
+		
+		private currentMode:MODE = MODE.NONE;
+		
 		private colorBG:string = "rgb(0,0,0)";
+		private ZOOMSTEP:number = 0.25;
 		
 		private canvas:HTMLCanvasElement = null;
 		private ctx:CanvasRenderingContext2D = null;
@@ -20,6 +32,16 @@ module GreenEd {
 		private currentMousePos:Point = null;
 		
 		private walls:Array<Wall> = [];
+		
+		/**
+		 * current zoom level for the editor
+		 */
+		private currentZoom:number = 1.0;
+		
+		/**
+		 * current offset in the level for the editor, top-left corner of the canvas
+		 */
+		private currentOffset:Point = new Point(0,0);
 
 		constructor(canvasElement:HTMLCanvasElement) {
 			this.canvas = canvasElement;
@@ -30,6 +52,8 @@ module GreenEd {
 			if( !this.ctx ) {
 				return false;
 			}
+			
+			this.ctx.font = "48px serif";
 			
 			this.resizeCanvas();
 			this.currentMousePos = new Point(0,0);
@@ -58,26 +82,11 @@ module GreenEd {
 			this.redraw();
 		}
 		
-		private onFilePanelButton = (evt:Event) => {
-			var element:HTMLElement = <HTMLElement>evt.target;
-			console.log("clicked on: " + element.id);
-		}
-		
-		private onToolsPanelButton = (evt:Event) => {
-			var element:HTMLElement = <HTMLElement>evt.target;
-			console.log("clicked on: " + element.id);
-			
-			/** toggle effect */
-			$('#toolsPanel').children().each( function() {
-				$(this).removeClass('success');
-			});
-			$(element).addClass('success');
-		}
-		
 		private redraw() : void {
 			this.clear();
 			this.drawWallNodes();
 			this.drawWallLines();
+			this.drawDebugText();
 		}
 		
 		private clear() : void {
@@ -122,6 +131,11 @@ module GreenEd {
 			this.ctx.stroke();
 		}
 		
+		private drawDebugText() {
+			this.ctx.fillStyle = 'rgb(255,255,255)';
+  			this.ctx.fillText("x:" + this.currentOffset.x + " y:" + this.currentOffset.y + " zoom:" + this.currentZoom, 5, 15);
+		}
+		
 		private onMouseDown = (evt:MouseEvent) => {
 			var pos:Point = this.getMousePos(evt);
 			this.mouseDownPos = pos;
@@ -154,6 +168,22 @@ module GreenEd {
 			var x:number = evt.clientX - this.canvasBoundingClientRect.left;
 			var y:number = evt.clientY - this.canvasBoundingClientRect.top;
 			return new Point(x,y);
+		}
+		
+		public zoomIn() {
+			this.currentZoom += this.ZOOMSTEP;
+			this.redraw();
+		}
+		
+		public zoomOut() {
+			if( this.currentZoom > this.ZOOMSTEP ) {
+				this.currentZoom -= this.ZOOMSTEP;
+				this.redraw();
+			}
+		}
+		
+		public setMode(newMode:MODE) {
+			this.currentMode = newMode;
 		}
 	}
 }
