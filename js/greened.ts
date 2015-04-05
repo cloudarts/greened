@@ -28,9 +28,9 @@ module GreenEd {
 		private ctxHeight:number = 0;
 		private canvasBoundingClientRect:any = null;
 		
-		private mouseDownPos:Point = null;
-		private currentMousePos:Point = null;
-		private lastMousePos:Point = null;
+		private mouseDownLevelPos:Point = null;
+		private currentMouseScreenPos:Point = null;
+		private lastMouseScreenPos:Point = null;
 		
 		private walls:Array<Wall> = [];
 		
@@ -57,8 +57,8 @@ module GreenEd {
 			this.ctx.font = "48px serif";
 			
 			this.resizeCanvas();
-			this.currentMousePos = new Point(0,0);
-			this.lastMousePos = new Point(0,0);
+			this.currentMouseScreenPos = new Point(0,0);
+			this.lastMouseScreenPos = new Point(0,0);
 			
 			this.canvas.onmousedown = this.onMouseDown;
 			this.canvas.onmousemove = this.onMouseMove;
@@ -102,12 +102,15 @@ module GreenEd {
 			for( var i:number = 0; i < this.walls.length; ++i ) {
 				var wall = this.walls[i];
 				
+				var p1OnScreen:Point = this.levelPosToScreenPos(wall.p1);
+				var p2OnScreen:Point = this.levelPosToScreenPos(wall.p2);
+				
 				this.ctx.beginPath();
-				this.ctx.arc(wall.p1.x + this.currentOffset.x, wall.p1.y + this.currentOffset.y, 10, 0, Math.PI*2, true); 
+				this.ctx.arc(p1OnScreen.x, p1OnScreen.y, 10, 0, Math.PI*2, true); 
 				this.ctx.stroke();
 				
 				this.ctx.beginPath();
-				this.ctx.arc(wall.p2.x + this.currentOffset.x, wall.p2.y + this.currentOffset.y, 10, 0, Math.PI*2, true); 
+				this.ctx.arc(p2OnScreen.x, p2OnScreen.y, 10, 0, Math.PI*2, true); 
 				this.ctx.stroke();
 			}
 		}
@@ -118,14 +121,21 @@ module GreenEd {
 			
 			for( var i:number = 0; i < this.walls.length; ++i ) {
 				var wall = this.walls[i];
-				this.ctx.moveTo(wall.p1.x + this.currentOffset.x, wall.p1.y + this.currentOffset.y);
-				this.ctx.lineTo(wall.p2.x + this.currentOffset.x, wall.p2.y + this.currentOffset.y);
+				
+				var p1OnScreen:Point = this.levelPosToScreenPos(wall.p1);
+				var p2OnScreen:Point = this.levelPosToScreenPos(wall.p2);
+				
+				this.ctx.moveTo(p1OnScreen.x, p1OnScreen.y);
+				this.ctx.lineTo(p2OnScreen.x, p2OnScreen.y);
 			}
 			
 			/* draw currently created line */
-			if( this.currentMode == MODE.WALLS && null != this.mouseDownPos ) {
-				this.ctx.moveTo(this.mouseDownPos.x + this.currentOffset.x, this.mouseDownPos.y + this.currentOffset.y);
-				this.ctx.lineTo(this.currentMousePos.x, this.currentMousePos.y);
+			if( this.currentMode == MODE.WALLS && null != this.mouseDownLevelPos ) {
+				
+				var p1OnScreen:Point = this.levelPosToScreenPos(this.mouseDownLevelPos);
+				
+				this.ctx.moveTo(p1OnScreen.x, p1OnScreen.y);
+				this.ctx.lineTo(this.currentMouseScreenPos.x, this.currentMouseScreenPos.y);
 			}
 			
 			this.ctx.lineWidth = 1;
@@ -139,47 +149,43 @@ module GreenEd {
 		}
 		
 		private onMouseDown = (evt:MouseEvent) => {
-			var pos:Point = this.getMousePos(evt);
-			pos.x -= this.currentOffset.x;
-			pos.y -= this.currentOffset.y;
-			this.mouseDownPos = pos;
+			this.mouseDownLevelPos = this.screenPosToLevelPos(this.getScreenMousePos(evt));
 			this.redraw();
 		}
 		
 		private onMouseMove = (evt:MouseEvent) => {
-			var pos:Point = this.getMousePos(evt);
-			this.currentMousePos = pos;
-			if( null != this.mouseDownPos ) {
+			this.currentMouseScreenPos = this.getScreenMousePos(evt);
+			if( null != this.mouseDownLevelPos ) {
 				if( this.currentMode == MODE.MOVE ) {
 					console.log("mode: " + this.currentMode);
-					var diff:Point = new Point(this.currentMousePos.x - this.lastMousePos.x, this.currentMousePos.y - this.lastMousePos.y);
+					var diff:Point = new Point(this.currentMouseScreenPos.x - this.lastMouseScreenPos.x, this.currentMouseScreenPos.y - this.lastMouseScreenPos.y);
 					this.currentOffset.x += diff.x;
 					this.currentOffset.y += diff.y;
 				}
 				
 				this.redraw();
 			}
-			this.lastMousePos = this.currentMousePos;
+			this.lastMouseScreenPos = this.currentMouseScreenPos;
 		}
 		
 		private onMouseUp = (evt:MouseEvent) => {
-			if( this.currentMode == MODE.WALLS && null != this.mouseDownPos ) {
-				var actualMouseUpPos:Point = new Point(this.currentMousePos.x - this.currentOffset.x, this.currentMousePos.y - this.currentOffset.y);
-				var newWall:Wall = new Wall(this.mouseDownPos, actualMouseUpPos);
+			if( this.currentMode == MODE.WALLS && null != this.mouseDownLevelPos ) {
+				var levelPosMouseUp:Point = this.screenPosToLevelPos(this.getScreenMousePos(evt));
+				var newWall:Wall = new Wall(this.mouseDownLevelPos, levelPosMouseUp);
 				this.walls.push(newWall);
 			}
 			
-			this.mouseDownPos = null;
+			this.mouseDownLevelPos = null;
 			
 			this.redraw();
 		}
 		
 		private onMouseLeave = (evt:MouseEvent) => {
-			this.mouseDownPos = null;
+			this.mouseDownLevelPos = null;
 			this.redraw();
 		}
 		
-		private getMousePos = (evt:MouseEvent) : Point => {
+		private getScreenMousePos = (evt:MouseEvent) : Point => {
 			var x:number = evt.clientX - this.canvasBoundingClientRect.left;
 			var y:number = evt.clientY - this.canvasBoundingClientRect.top;
 			return new Point(x,y);
@@ -199,6 +205,14 @@ module GreenEd {
 		
 		public setMode(newMode:MODE) {
 			this.currentMode = newMode;
+		}
+		
+		private screenPosToLevelPos(screenPos:Point) : Point {
+			return new Point(this.currentOffset.x + screenPos.x, this.currentOffset.y + screenPos.y);
+		}
+		
+		private levelPosToScreenPos(levelPos:Point) : Point {
+			return new Point(levelPos.x - this.currentOffset.x, levelPos.y - this.currentOffset.y);
 		}
 	}
 }
