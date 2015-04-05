@@ -157,10 +157,9 @@ module GreenEd {
 			this.currentMouseScreenPos = this.getScreenMousePos(evt);
 			if( null != this.mouseDownLevelPos ) {
 				if( this.currentMode == MODE.MOVE ) {
-					console.log("mode: " + this.currentMode);
 					var diff:Point = new Point(this.currentMouseScreenPos.x - this.lastMouseScreenPos.x, this.currentMouseScreenPos.y - this.lastMouseScreenPos.y);
-					this.currentOffset.x += diff.x;
-					this.currentOffset.y += diff.y;
+					this.currentOffset.x -= diff.x / this.currentZoom;
+					this.currentOffset.y -= diff.y / this.currentZoom;
 				}
 				
 				this.redraw();
@@ -208,11 +207,17 @@ module GreenEd {
 		}
 		
 		private screenPosToLevelPos(screenPos:Point) : Point {
-			return new Point(this.currentOffset.x + screenPos.x, this.currentOffset.y + screenPos.y);
+			var levelPos:Point = new Point(this.currentOffset.x + screenPos.x, this.currentOffset.y + screenPos.y);
+			levelPos.x = levelPos.x / this.currentZoom;
+			levelPos.y = levelPos.y / this.currentZoom;
+			return levelPos;
 		}
 		
 		private levelPosToScreenPos(levelPos:Point) : Point {
-			return new Point(levelPos.x - this.currentOffset.x, levelPos.y - this.currentOffset.y);
+			var screenPos:Point = new Point(levelPos.x - this.currentOffset.x, levelPos.y - this.currentOffset.y);
+			screenPos.x = screenPos.x * this.currentZoom;
+			screenPos.y = screenPos.y * this.currentZoom;
+			return screenPos;
 		}
 	}
 }
