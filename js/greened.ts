@@ -21,6 +21,7 @@ module GreenEd {
 		private ZOOMSTEP:number = 0.25;
 		private SNAP_DISTANCE:number = 15;
 		private NODE_RADIUS:number = this.SNAP_DISTANCE;
+		private GRID_WIDTH:number = 100;
 		
 		private canvas:HTMLCanvasElement = null;
 		private ctx:CanvasRenderingContext2D = null;
@@ -87,6 +88,7 @@ module GreenEd {
 		
 		private redraw() : void {
 			this.clear();
+			this.drawGrid();
 			this.drawWallNodes();
 			this.drawWallLines();
 			this.drawDebugText();
@@ -95,6 +97,35 @@ module GreenEd {
 		private clear() : void {
 			this.ctx.fillStyle = this.colorBG;
 			this.ctx.fillRect(0,0,this.ctxWidth, this.ctxHeight);
+		}
+		
+		private drawGrid() : void {
+			var gridWidthOnScreen:number = this.GRID_WIDTH / this.currentZoom;
+			var firstVisibleGridlineX:number = Math.floor(this.currentOffset.x / gridWidthOnScreen) * this.GRID_WIDTH;
+			var firstVisibleGridlineY:number = Math.floor(this.currentOffset.y / gridWidthOnScreen) * this.GRID_WIDTH;
+
+			var numOfGridLinesX:number = (Math.floor(this.ctxWidth / this.GRID_WIDTH) + 2) / this.currentZoom;
+			var numOfGridLinesY:number = (Math.floor(this.ctxHeight / this.GRID_WIDTH) + 2) / this.currentZoom;
+			
+			this.ctx.save();
+			this.ctx.beginPath();
+			this.ctx.lineWidth = 1;
+			this.ctx.strokeStyle = 'rgb(255,255,255)';
+			this.ctx.setLineDash([1,2]);
+			for( var xi:number = 0; xi < numOfGridLinesX; xi++ ) {
+				var gridX:number = firstVisibleGridlineX + (xi * this.GRID_WIDTH);
+				var screenGridX:number = this.levelPosToScreenPos(new Point(gridX, 0)).x;
+				this.ctx.moveTo(screenGridX, 0);
+				this.ctx.lineTo(screenGridX, this.ctxHeight);
+			}
+			for( var yi:number = 0; yi < numOfGridLinesY; yi++ ) {
+				var gridY:number = firstVisibleGridlineY + (yi * this.GRID_WIDTH);
+				var screenGridY:number = this.levelPosToScreenPos(new Point(0, gridY)).y;
+				this.ctx.moveTo(0, screenGridY);
+				this.ctx.lineTo(this.ctxWidth, screenGridY)
+			}
+			this.ctx.stroke();
+			this.ctx.restore();
 		}
 		
 		private drawWallNodes() {
