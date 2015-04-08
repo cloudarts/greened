@@ -100,12 +100,14 @@ module GreenEd {
 		}
 		
 		private drawGrid() : void {
-			var gridWidthOnScreen:number = this.GRID_WIDTH / this.currentZoom;
-			var firstVisibleGridlineX:number = Math.floor(this.currentOffset.x / gridWidthOnScreen) * this.GRID_WIDTH;
-			var firstVisibleGridlineY:number = Math.floor(this.currentOffset.y / gridWidthOnScreen) * this.GRID_WIDTH;
-
-			var numOfGridLinesX:number = (Math.floor(this.ctxWidth / this.GRID_WIDTH) + 2) / this.currentZoom;
-			var numOfGridLinesY:number = (Math.floor(this.ctxHeight / this.GRID_WIDTH) + 2) / this.currentZoom;
+			var gridWidthOnScreen:number = this.GRID_WIDTH * this.currentZoom;
+			
+			var gridStartXLevelSpace:number = this.GRID_WIDTH - (this.currentOffset.x % this.GRID_WIDTH);
+			var gridStartYLevelSpace:number = this.GRID_WIDTH - (this.currentOffset.y % this.GRID_WIDTH);
+			var gridStartXScreenSpace:number = (gridStartXLevelSpace * this.currentZoom) - gridWidthOnScreen;
+			var gridStartYScreenSpace:number = (gridStartYLevelSpace * this.currentZoom) - gridWidthOnScreen;
+			var numOfGridLinesX:number = Math.floor(this.ctxWidth / gridWidthOnScreen) + 2;
+			var numOfGridLinesY:number = Math.floor(this.ctxHeight / gridWidthOnScreen) + 2;
 			
 			this.ctx.save();
 			this.ctx.beginPath();
@@ -113,16 +115,14 @@ module GreenEd {
 			this.ctx.strokeStyle = 'rgb(255,255,255)';
 			this.ctx.setLineDash([1,2]);
 			for( var xi:number = 0; xi < numOfGridLinesX; xi++ ) {
-				var gridX:number = firstVisibleGridlineX + (xi * this.GRID_WIDTH);
-				var screenGridX:number = this.levelPosToScreenPos(new Point(gridX, 0)).x;
+				var screenGridX:number = gridStartXScreenSpace + xi * gridWidthOnScreen;
 				this.ctx.moveTo(screenGridX, 0);
 				this.ctx.lineTo(screenGridX, this.ctxHeight);
 			}
 			for( var yi:number = 0; yi < numOfGridLinesY; yi++ ) {
-				var gridY:number = firstVisibleGridlineY + (yi * this.GRID_WIDTH);
-				var screenGridY:number = this.levelPosToScreenPos(new Point(0, gridY)).y;
+				var screenGridY:number = gridStartYScreenSpace + yi * gridWidthOnScreen;
 				this.ctx.moveTo(0, screenGridY);
-				this.ctx.lineTo(this.ctxWidth, screenGridY)
+				this.ctx.lineTo(this.ctxWidth, screenGridY);
 			}
 			this.ctx.stroke();
 			this.ctx.restore();
@@ -267,14 +267,18 @@ module GreenEd {
 		}
 		
 		private screenPosToLevelPos(screenPos:Point) : Point {
-			var levelPos:Point = new Point(this.currentOffset.x + screenPos.x, this.currentOffset.y + screenPos.y);
+			var levelPos:Point = new Point(screenPos.x, screenPos.y);
 			levelPos.x = levelPos.x / this.currentZoom;
 			levelPos.y = levelPos.y / this.currentZoom;
+			levelPos.x = levelPos.x + this.currentOffset.x;
+			levelPos.y = levelPos.y + this.currentOffset.y;
 			return levelPos;
 		}
 		
 		private levelPosToScreenPos(levelPos:Point) : Point {
-			var screenPos:Point = new Point(levelPos.x - this.currentOffset.x, levelPos.y - this.currentOffset.y);
+			var screenPos:Point = new Point(levelPos.x, levelPos.y);
+			screenPos.x = screenPos.x - this.currentOffset.x;
+			screenPos.y = screenPos.y - this.currentOffset.y;
 			screenPos.x = screenPos.x * this.currentZoom;
 			screenPos.y = screenPos.y * this.currentZoom;
 			return screenPos;
@@ -285,14 +289,15 @@ module GreenEd {
 		 * if no node with SNAP_DISTANCE, returns null
 		 */
 		private snapToNextNode(levelPos:Point) : Point {
+			var computedSnapDistance = this.SNAP_DISTANCE / this.currentZoom;
 			for( var i:number = 0; i < this.walls.length; ++i ) {
 				var wall:Wall = this.walls[i];
 				var distance:number = this.getDistance(wall.p1, levelPos);
-				if( distance <= this.SNAP_DISTANCE ) {
+				if( distance <= computedSnapDistance ) {
 					return wall.p1;
 				}
 				distance = this.getDistance(wall.p2, levelPos);
-				if( distance <= this.SNAP_DISTANCE ) {
+				if( distance <= computedSnapDistance ) {
 					return wall.p2;
 				}
 			}
