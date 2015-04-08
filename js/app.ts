@@ -57,8 +57,16 @@ var onToolsPanelButton = function(evt) {
 			editor.setMode(GreenEd.MODE.MOVE);
 			break;
 		}
-		case "btnWalls": {
-			editor.setMode(GreenEd.MODE.WALLS);
+		case "btnWallsAdd": {
+			editor.setMode(GreenEd.MODE.WALLS_ADD);
+			break;
+		}
+		case "btnWallsEdit": {
+			editor.setMode(GreenEd.MODE.WALLS_EDIT);
+			break;
+		}
+		case "btnWallsRemove": {
+			editor.setMode(GreenEd.MODE.WALLS_REMOVE);
 			break;
 		}
 	}

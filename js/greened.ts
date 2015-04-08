@@ -10,7 +10,9 @@ module GreenEd {
 	export enum MODE {
 		NONE,
 		MOVE,
-		WALLS
+		WALLS_ADD,
+		WALLS_EDIT,
+		WALLS_REMOVE
 	};
 	
 	export class Editor {
@@ -173,7 +175,7 @@ module GreenEd {
 			}
 			
 			/* draw currently created line */
-			if( this.currentMode == MODE.WALLS && null != this.mouseDownLevelPos ) {
+			if( this.currentMode == MODE.WALLS_ADD && null != this.mouseDownLevelPos ) {
 				
 				var p1OnScreen:Point = this.levelPosToScreenPos(this.mouseDownLevelPos);
 				
@@ -208,7 +210,7 @@ module GreenEd {
 					this.currentOffset.x -= diff.x / this.currentZoom;
 					this.currentOffset.y -= diff.y / this.currentZoom;
 				}
-				else if( this.currentMode == MODE.WALLS ) {
+				else if( this.currentMode == MODE.WALLS_ADD ) {
 					var levelPos:Point = this.screenPosToLevelPos(this.currentMouseScreenPos);
 					var snappedPos:Point = this.snapToNextNode(levelPos);
 					if( null != snappedPos ) {
@@ -223,7 +225,7 @@ module GreenEd {
 		}
 		
 		private onMouseUp = (evt:MouseEvent) => {
-			if( this.currentMode == MODE.WALLS && null != this.mouseDownLevelPos ) {
+			if( this.currentMode == MODE.WALLS_ADD && null != this.mouseDownLevelPos ) {
 				var screenPos:Point = this.getScreenMousePos(evt);
 				var levelPosMouseUp:Point = this.screenPosToLevelPos(screenPos);
 				var snappedPos:Point = this.snapToNextNode(levelPosMouseUp);
