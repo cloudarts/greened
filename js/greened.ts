@@ -1,10 +1,38 @@
 module GreenEd {
 	export class Point {
 		constructor(public x:number, public y:number) {}
+		
+		equals(otherX:number, otherY:number) : boolean {
+			return this.compareFloats(this.x,otherX) && this.compareFloats(this.y, otherY);
+		}
+		
+		private compareFloats(a:number, b:number) : boolean {
+			var absA:number = Math.abs(a);
+			var absB:number = Math.abs(b);
+			var diff:number = Math.abs(a - b);
+	
+			if (a == b) { // shortcut, handles infinities
+				return true;
+			} 
+			else {
+				// a or b is zero or both are extremely close to it
+				// relative error is less meaningful here
+				return diff < Number.MIN_VALUE;
+			} 
+		}
+
 	}
 	
 	export class Wall {
 		constructor(public p1:Point, public p2:Point) {}
+		
+		hasNode(p:Point) : boolean {
+			return this.p1.equals(p.x, p.y) || this.p2.equals(p.x, p.y);
+		}
+		
+		compareTo(otherP1:Point, otherP2:Point) : boolean {
+			return this.hasNode(otherP1) && this.hasNode(otherP2);
+		}
 	}
 	
 	export enum MODE {
@@ -235,6 +263,26 @@ module GreenEd {
 				var newWall:Wall = new Wall(this.mouseDownLevelPos, levelPosMouseUp);
 				this.walls.push(newWall);
 			}
+			else if( this.currentMode == MODE.WALLS_REMOVE && null != this.mouseDownLevelPos ) {
+				/* check if mouseUp over a wall node */
+				var screenPos:Point = this.getScreenMousePos(evt);
+				var mouseUpNode:Point = this.snapToNextNode(screenPos);
+				if( null != mouseUpNode ) {
+					/* check if mouseDown pos was on same node as mouseUp pos */
+					var mouseDownNode:Point = this.snapToNextNode(this.mouseDownLevelPos);
+					if( null != mouseDownNode && true == mouseDownNode.equals(mouseUpNode.x, mouseUpNode.y) ) {
+						var wall:Wall = this.getWallWithNode(mouseDownNode);
+						this.deleteWall(wall);
+					}
+					else if( null == mouseDownNode ) {
+						console.log("mouseDownNode is null");
+					}
+					else {
+						console.log("not equal: down " + mouseDownNode + "; up " + mouseUpNode);
+					}
+				}
+			}
+			
 			
 			this.mouseDownLevelPos = null;
 			
@@ -309,6 +357,24 @@ module GreenEd {
 		private getDistance(p1:Point, p2:Point) : number {
 			var vec:Point = new Point(p1.x - p2.x, p1.y - p2.y);
 			return Math.sqrt(vec.x * vec.x + vec.y * vec.y);
+		}
+		
+		private getWallWithNode(p:Point) : Wall {
+			for( var i:number = 0; i < this.walls.length; ++i ) {
+				var wall:Wall = this.walls[i];
+				if( true == wall.hasNode(p) ) {
+					return wall;
+				}
+			}
+			
+			return null;
+		}
+		
+		private deleteWall(wallToBeDeleted:Wall) {
+			var index = this.walls.indexOf(wallToBeDeleted, 0);
+			if (index != undefined) {
+			   this.walls.splice(index, 1);
+			}
 		}
 	}
 }
