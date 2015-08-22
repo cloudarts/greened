@@ -242,6 +242,14 @@ module GreenEd {
 					}
 					this.currentMouseScreenPos = this.levelPosToScreenPos(levelPos);
 				}
+				else if( this.currentMode == MODE.WALLS_EDIT ) {
+					/* currently holding down on a wall node? */
+					if( null != this.mouseDownLevelPos ) {
+						var levelPos:Point = this.screenPosToLevelPos(this.currentMouseScreenPos);
+						this.mouseDownLevelPos.x = levelPos.x;
+						this.mouseDownLevelPos.y = levelPos.y;
+					}
+				}
 			}
 			this.lastMouseScreenPos = this.currentMouseScreenPos;
 				
