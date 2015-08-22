@@ -266,7 +266,8 @@ module GreenEd {
 			else if( this.currentMode == MODE.WALLS_REMOVE && null != this.mouseDownLevelPos ) {
 				/* check if mouseUp over a wall node */
 				var screenPos:Point = this.getScreenMousePos(evt);
-				var mouseUpNode:Point = this.snapToNextNode(screenPos);
+				var levelPosMouseUp:Point = this.screenPosToLevelPos(screenPos);
+				var mouseUpNode:Point = this.snapToNextNode(levelPosMouseUp);
 				if( null != mouseUpNode ) {
 					/* check if mouseDown pos was on same node as mouseUp pos */
 					var mouseDownNode:Point = this.snapToNextNode(this.mouseDownLevelPos);
@@ -280,6 +281,9 @@ module GreenEd {
 					else {
 						console.log("not equal: down " + mouseDownNode + "; up " + mouseUpNode);
 					}
+				}
+				else {
+					console.log("mouseUpNode is null");
 				}
 			}
 			
