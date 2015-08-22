@@ -7,16 +7,12 @@ module GreenEd {
 		}
 		
 		private compareFloats(a:number, b:number) : boolean {
-			var absA:number = Math.abs(a);
-			var absB:number = Math.abs(b);
 			var diff:number = Math.abs(a - b);
 	
-			if (a == b) { // shortcut, handles infinities
+			if (a == b) { // only a shortcut for infinites
 				return true;
 			} 
 			else {
-				// a or b is zero or both are extremely close to it
-				// relative error is less meaningful here
 				return diff < Number.MIN_VALUE;
 			} 
 		}
