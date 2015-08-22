@@ -1,6 +1,15 @@
 module GreenEd {
 	export class Point {
-		constructor(public x:number, public y:number) {}
+		/**
+		 * points (or wall nodes) can be flagged as transient in order for them 
+		 * to be ignored in snapping function,
+		 * i. e. when the wall node is currently being moved
+		 */
+		public transient:boolean;
+		
+		constructor(public x:number, public y:number) {
+			this.transient = false;
+		}
 		
 		equals(otherX:number, otherY:number) : boolean {
 			return this.compareFloats(this.x,otherX) && this.compareFloats(this.y, otherY);
@@ -246,6 +255,15 @@ module GreenEd {
 					/* currently holding down on a wall node? */
 					if( null != this.mouseDownLevelPos ) {
 						var levelPos:Point = this.screenPosToLevelPos(this.currentMouseScreenPos);
+						
+						/* check for adjacent nodes */
+						this.mouseDownLevelPos.transient = true;
+						var snappedPos:Point = this.snapToNextNode(levelPos);
+						this.mouseDownLevelPos.transient = false;
+						if( null != snappedPos ) {
+							levelPos = snappedPos;
+						}
+						
 						this.mouseDownLevelPos.x = levelPos.x;
 						this.mouseDownLevelPos.y = levelPos.y;
 					}
@@ -351,11 +369,11 @@ module GreenEd {
 			for( var i:number = 0; i < this.walls.length; ++i ) {
 				var wall:Wall = this.walls[i];
 				var distance:number = this.getDistance(wall.p1, levelPos);
-				if( distance <= computedSnapDistance ) {
+				if( !wall.p1.transient && distance <= computedSnapDistance ) {
 					return wall.p1;
 				}
 				distance = this.getDistance(wall.p2, levelPos);
-				if( distance <= computedSnapDistance ) {
+				if( !wall.p2.transient && distance <= computedSnapDistance ) {
 					return wall.p2;
 				}
 			}
