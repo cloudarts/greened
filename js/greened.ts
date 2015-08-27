@@ -402,5 +402,19 @@ module GreenEd {
 			   this.walls.splice(index, 1);
 			}
 		}
+		
+		public setLevel(levelData:any) {
+			if( null == levelData ) {
+				this.walls = [];
+				return;
+			}
+			this.walls = levelData.walls;
+		}
+		
+		public getLevel() {
+			return {
+				walls: this.walls
+			};
+		}
 	}
 }
